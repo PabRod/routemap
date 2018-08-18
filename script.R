@@ -12,30 +12,25 @@ filename <- './data/merged.geojson'
 data <- fromJSON(filename)
 
 raw_coords <- data$features$geometry$coordinates
+
+## Merge the coordinates into a single table
 coords <- as.data.frame(raw_coords[2][[1]])
 for (i in 2:length(raw_coords)) {
-  new_coords <- as.data.frame(raw_coords[i][[1]])
-  if (length(new_coords) == 2) {
-    coords <- rbind(coords, new_coords)
+  if (data$features$geometry$type[i] == 'LineString') {
+    coords <- rbind(coords, as.data.frame(raw_coords[i][[1]]))
   }
 }
 colnames(coords) <- c('lon', 'lat')
 
 ## Get the cities
-nl.cities <- filter(world.cities, country.etc == 'Netherlands')
-nl.selection <- filter(nl.cities, name %in% c('Amsterdam', 'Rotterdam', 'Utrecht', 'Alkmaar', 'Middelburg', 'Dordrecht', 'Wageningen'))
-be.cities <- filter(world.cities, country.etc == 'Belgium')
-be.selection <- filter(be.cities, name %in% c('Gent', 'Ostend', 'Brugge'))
+cities_db <- filter(world.cities, country.etc == 'Netherlands' | country.etc == 'Belgium')
+cities_selection <- filter(cities_db, name %in% c('Amsterdam', 'Brielle', 'Utrecht', 'Alkmaar', 'Middelburg', 'Dordrecht', 'Wageningen', 'Gent', 'Ostend', 'Brugge'))
 
 ## Plot the map
-map <- get_map(c(4.35, 52), zoom = 8, source = 'stamen', maptype = 'watercolor')               
+map <- get_map(c(4.35, 52), zoom = 7, source = 'stamen', maptype = 'watercolor')               
 p <- ggmap(map) 
 p <- p + geom_point(data = coords, aes(x = lon, y = lat), alpha = 0.5, color = 'red')
 p <- p + theme(legend.position = 'right') 
-p <- p + labs(x = 'Longitude', y = 'Latitude', title = 'Location History') 
-p <- p + geom_text(data = nl.selection, aes(x=long, y=lat, label=name, family='serif', size=5), check_overlap = TRUE, angle = 30, show.legend = FALSE)
-p <- p + geom_text(data = be.selection, aes(x=long, y=lat, label=name, family='serif', size=5), check_overlap = TRUE, angle = 30, show.legend = FALSE)
-
-##
-p
+p <- p + labs(x = 'Longitude', y = 'Latitude') 
+p <- p + geom_text(data = cities_selection, aes(x=long, y=lat, label=name, family='serif', size=5), check_overlap = TRUE, angle = 30, show.legend = FALSE)
 
