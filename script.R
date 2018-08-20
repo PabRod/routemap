@@ -13,11 +13,20 @@ path_coords <- pathGeoJson(filename)
 
 ## Get the cities
 cities_db <- filter(world.cities, country.etc == 'Netherlands' | country.etc == 'Belgium')
-cities_selection <- filter(cities_db, name %in% c('Amsterdam', 'Brielle', 'Utrecht', 'Alkmaar', 'Middelburg', 'Dordrecht', 'Wageningen', 'Gent', 'Ostend', 'Brugge'))
+cities_selection <- filter(cities_db, name %in% c('Amsterdam', 'Brielle', 'Utrecht', 'Alkmaar', 
+                                                  'Middelburg', 'Dordrecht', 'Wageningen', 'Gent', 'Ostend', 'Brugge'))
 
 ## Plot the map
-map <- get_map(c(4.35, 52), zoom = 7, source = 'stamen', maptype = 'watercolor')               
-p <- ggmap(map) 
+
+## Center around average values
+central_lon <- mean(c(min(path_coords$lon), max(path_coords$lon)))
+central_lat <- mean(c(min(path_coords$lat), max(path_coords$lat)))
+
+## Get the map
+map <- get_map(c(central_lon, central_lat), zoom = 7, source = 'stamen', maptype = 'watercolor')               
+p <- ggmap(map)
+
+## Add the aesthetics
 p <- p + geom_point(data = path_coords, aes(x = lon, y = lat), alpha = 0.5, color = 'red')
 p <- p + theme(legend.position = 'right') 
 p <- p + labs(x = 'Longitude', y = 'Latitude') 
